@@ -1,0 +1,11 @@
+[package]
+name = "fixedvec"
+version = "0.1.0"
+authors = ["Nick Stevens <nick@bitcurry.com>"]
+license = "MIT"
+repository = "https://github.com/nastevens/fixedvec-rs"
+homepage = "https://github.com/nastevens/fixedvec-rs"
+documentation = "http://nastevens.github.io/fixedvec-rs/"
+description = """
+A heapless implementation of the Rust vector.
+"""
