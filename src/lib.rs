@@ -23,7 +23,9 @@
 #![crate_type = "lib"]
 #![crate_name = "fixedvec"]
 
-#![feature(core)]
+#![allow(unused_features)]
+#![feature(no_std, core_slice_ext)]
+#![no_std]
 
 //! Heapless Vec implementation using only libcore
 //!
@@ -119,10 +121,12 @@
 //! }
 //! ```
 
-extern crate core;
-
 use core::hash::{Hash, Hasher};
 use core::ops;
+
+#[cfg(test)]
+#[macro_use]
+extern crate std;
 
 /// Convenience macro for use with `FixedVec`. Allocates the specified number
 /// of elements of specified type on the stack.
@@ -774,6 +778,7 @@ impl<'a, T> Eq for FixedVec<'a, T> where T: Copy + Eq { }
 #[cfg(test)]
 mod test {
     use super::FixedVec;
+    use std::prelude::v1::*;
     use std::hash::{Hash, SipHasher};
 
     #[test]
