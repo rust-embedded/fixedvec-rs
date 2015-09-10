@@ -709,10 +709,11 @@ impl<'a, T> Iterator for Iter<'a, T> where T: Copy {
     #[inline]
     fn next(&mut self) -> Option<T> {
         if self.idx >= self.list.len() {
-            return None;
+            None
+        } else {
+            self.idx += 1;
+            Some(self.list[self.idx - 1])
         }
-        self.idx += 1;
-        Some(self.list[self.idx - 1])
     }
 
     #[inline]
