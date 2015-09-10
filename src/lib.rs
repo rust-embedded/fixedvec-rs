@@ -347,9 +347,8 @@ impl <'a, T> FixedVec<'a, T> where T: 'a + Copy {
     /// assert!(vec.insert(2, 17).is_err());
     /// # }
     pub fn insert(&mut self, index: usize, element: T) -> Result<()> {
-        if index > self.capacity() {
-            panic!("Index out of bounds");
-        } else if self.len() == 0 {
+        assert!(index <= self.len);
+        if index == self.len || self.len == 0 {
             self.push(element)
         } else if self.available() >= 1 {
             self.len += 1;
