@@ -773,12 +773,106 @@ impl<'a, T> Eq for FixedVec<'a, T> where T: Copy + Eq { }
 #[cfg(test)]
 mod test {
     use super::FixedVec;
+    use std::hash::{Hash, SipHasher};
+
+    #[test]
+    fn test_empty_array() {
+        let mut empty = alloc_stack!([u8; 0]);
+        let mut vec = FixedVec::new(&mut empty);
+        assert!(vec.is_empty());
+        assert_eq!(vec.capacity(), 0);
+        assert_eq!(vec.len(), 0);
+        assert_eq!(vec.available(), 0);
+        assert_eq!(vec.as_slice(), &[] as &[u8]);
+        assert!(vec.push(0).is_err());
+        assert!(vec.push_all(&[] as &[u8]).is_ok());
+        assert!(vec.push_all(&[1]).is_err());
+        vec.clear();
+        vec.map_in_place(|x: &mut u8| { *x = 1 });
+        vec.retain(|_: &u8| { true });
+        vec.dedup();
+        {
+            let mut iter = vec.iter();
+            assert!(iter.next().is_none());
+        }
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_insert_bad_index() {
+        let mut space = alloc_stack!([u8; 10]);
+        let mut vec = FixedVec::new(&mut space);
+        vec.insert(3, 0).unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_remove_bad_index() {
+        let mut space = alloc_stack!([u8; 10]);
+        let mut vec = FixedVec::new(&mut space);
+        vec.push_all(&[1, 2, 3, 4, 5]).unwrap();
+        vec.remove(8);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_resize_bad_len() {
+        let mut space = alloc_stack!([u8; 10]);
+        let mut vec = FixedVec::new(&mut space);
+        vec.resize(15, 0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_swap_remove_bad_index() {
+        let mut space = alloc_stack!([u8; 10]);
+        let mut vec = FixedVec::new(&mut space);
+        vec.push_all(&[1, 2, 3, 4, 5]).unwrap();
+        vec.swap_remove(8);
+    }
+
+    #[test]
+    fn test_iterator() {
+        let mut space = alloc_stack!([u8; 10]);
+        let mut vec = FixedVec::new(&mut space);
+        vec.push_all(&[1, 2, 3, 4, 5]).unwrap();
+        let result: Vec<u8> = vec.iter().collect();
+        assert_eq!(vec.as_slice(), &result[..]);
+    }
+
+    #[test]
+    fn test_hash() {
+        // Two vectors with the same contents should have the same hash
+        let mut space1 = alloc_stack!([u8; 10]);
+        let mut vec1 = FixedVec::new(&mut space1);
+        let mut hasher1 = SipHasher::new();
+        vec1.push_all(&[1, 2, 3, 4, 5]).unwrap();
+        let mut space2 = alloc_stack!([u8; 10]);
+        let mut vec2 = FixedVec::new(&mut space2);
+        let mut hasher2 = SipHasher::new();
+        vec2.push_all(&[1, 2, 3, 4, 5]).unwrap();
+        assert_eq!(vec1.hash(&mut hasher1), vec2.hash(&mut hasher2));
+    }
 
     #[test]
     fn test_extend() {
-        let mut space = alloc_stack!([u8; 16]);
+        let mut space = alloc_stack!([u8; 10]);
         let mut vec = FixedVec::new(&mut space);
         vec.extend(0..6);
-        assert_eq!(&[0, 1, 2, 3, 4, 5], vec.as_slice());
+        assert_eq!(vec.as_slice(), &[0, 1, 2, 3, 4, 5]);
+    }
+
+    #[test]
+    fn test_equal() {
+        let mut space1 = alloc_stack!([u8; 10]);
+        let mut vec1 = FixedVec::new(&mut space1);
+        vec1.push_all(&[1, 2, 3, 4, 5]).unwrap();
+
+        // Should be equal even if alloc'd space isn't the same
+        let mut space2 = alloc_stack!([u8; 5]);
+        let mut vec2 = FixedVec::new(&mut space2);
+        vec2.push_all(&[1, 2, 3, 4, 5]).unwrap();
+
+        assert_eq!(vec1, vec2);
     }
 }
