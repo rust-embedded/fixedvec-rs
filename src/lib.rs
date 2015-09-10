@@ -28,9 +28,9 @@
 //! Heapless Vec implementation using only libcore
 //!
 //! When developing for certain types of systems, especially embedded systems,
-//! it is desireable to avoid the non-determinism that can be introduced by
+//! it is desirable to avoid the non-determinism that can be introduced by
 //! using a heap. A commonly used data structure is a "buffer" - a
-//! pre-allocated chunk of memory, either in static memory or on the stack.
+//! preallocated chunk of memory, either in static memory or on the stack.
 //!
 //! Thanks to the extensibility of Rust, it is possible to have a datatype
 //! that performs _almost_ like the libstd `Vec` type, without requiring a
@@ -56,14 +56,14 @@
 //!
 //! ## Functions with different signatures
 //!
-//! The following functions have different signatures than their equivilents in
+//! The following functions have different signatures than their equivalents in
 //! `Vec`.
 //!
 //! * `new`: Self-explanatory - instantiating a different object
 //! * `push`, `push_all`, `insert`: Functions that add elements return a Result
 //!    indicating if the result was successful.
 //! * `map_in_place`: Similar to `Vec` `map_in_place`, except there is no
-//!    coersion of the types.
+//!    coercion of the types.
 //!
 //! ## Functions in `FixedVec` not in `Vec`
 //!
@@ -106,7 +106,7 @@
 //! use fixedvec::FixedVec;
 //!
 //! fn main() {
-//!     let mut preallocated_space = alloc_stack!([u8; 16]);
+//!     let mut preallocated_space = alloc_stack!([u8; 10]);
 //!     let mut vec = FixedVec::new(&mut preallocated_space);
 //!     assert_eq!(vec.len(), 0);
 //!
@@ -124,6 +124,22 @@ extern crate core;
 use core::hash::{Hash, Hasher};
 use core::ops;
 
+/// Convenience macro for use with `FixedVec`. Allocates the specified number
+/// of elements of specified type on the stack.
+///
+/// # Example
+///
+/// ```
+/// # #[macro_use] extern crate fixedvec;
+/// # use fixedvec::FixedVec;
+/// # fn main() {
+/// // Allocate space for 16 u8's
+/// let mut space = alloc_stack!([u8; 16]);
+///
+/// // Give the space to a `FixedVec`, which manages it from here on out
+/// let vec = FixedVec::new(&mut space);
+/// # }
+/// ```
 #[macro_export]
 macro_rules! alloc_stack {
     ([$item_type:ty; $len:expr]) => ({
@@ -229,6 +245,7 @@ impl <'a, T: 'a + Copy> FixedVec<'a, T> {
     /// assert_eq!(vec.available(), 16);
     /// vec.push(1).unwrap();
     /// assert_eq!(vec.available(), 15);
+    /// assert_eq!(vec.available(), vec.capacity() - vec.len());
     /// # }
     /// ```
     #[inline]
@@ -269,7 +286,7 @@ impl <'a, T: 'a + Copy> FixedVec<'a, T> {
     /// let mut vec = FixedVec::new(&mut space);
     ///
     /// vec.push_all(&[1, 2, 3, 4]).unwrap();
-    /// assert_eq!(&[1, 2, 3, 4], vec.as_slice());
+    /// assert_eq!(vec.as_slice(), &[1, 2, 3, 4]);
     /// # }
     #[inline]
     pub fn as_slice(&self) -> &[T] {
@@ -312,11 +329,20 @@ impl <'a, T: 'a + Copy> FixedVec<'a, T> {
     /// # #[macro_use] extern crate fixedvec;
     /// # use fixedvec::FixedVec;
     /// # fn main() {
-    /// let mut space = alloc_stack!([u8; 16]);
+    /// let mut space = alloc_stack!([u8; 5]);
     /// let mut vec = FixedVec::new(&mut space);
+    ///
+    /// // Inserting in the middle moves elements to the right
     /// vec.push_all(&[1, 2, 3]).unwrap();
     /// vec.insert(1, 15).unwrap();
-    /// assert_eq!(&[1, 15, 2, 3], vec.as_slice());
+    /// assert_eq!(vec.as_slice(), &[1, 15, 2, 3]);
+    ///
+    /// // Can also insert at the end of the vector
+    /// vec.insert(4, 16).unwrap();
+    /// assert_eq!(vec.as_slice(), &[1, 15, 2, 3, 16]);
+    ///
+    /// // Cannot insert if there is not enough capacity
+    /// assert!(vec.insert(2, 17).is_err());
     /// # }
     pub fn insert(&mut self, index: usize, element: T) -> Result<()> {
         if index > self.capacity() {
@@ -353,9 +379,15 @@ impl <'a, T: 'a + Copy> FixedVec<'a, T> {
     /// # fn main() {
     /// let mut space = alloc_stack!([u8; 16]);
     /// let mut vec = FixedVec::new(&mut space);
+    ///
+    /// // Remove element from the middle
     /// vec.push_all(&[1, 2, 3]).unwrap();
     /// assert_eq!(vec.remove(1), 2);
-    /// assert_eq!(&[1, 3], vec.as_slice());
+    /// assert_eq!(vec.as_slice(), &[1, 3]);
+    ///
+    /// // Remove element from the end
+    /// assert_eq!(vec.remove(1), 3);
+    /// assert_eq!(vec.as_slice(), &[1]);
     /// # }
     pub fn remove(&mut self, index: usize) -> T {
         assert!(index < self.len);
@@ -367,7 +399,7 @@ impl <'a, T: 'a + Copy> FixedVec<'a, T> {
         ret
     }
 
-    /// Appends an element to the back of the `FixedVec`.
+    /// Appends an element to the back of the vector.
     ///
     /// # Example
     ///
@@ -375,11 +407,17 @@ impl <'a, T: 'a + Copy> FixedVec<'a, T> {
     /// # #[macro_use] extern crate fixedvec;
     /// # use fixedvec::FixedVec;
     /// # fn main() {
-    /// let mut space = alloc_stack!([u8; 16]);
+    /// let mut space = alloc_stack!([u8; 3]);
     /// let mut vec = FixedVec::new(&mut space);
+    ///
+    /// // Pushing appends to the end of the vector
     /// vec.push(1).unwrap();
     /// vec.push(2).unwrap();
-    /// assert_eq!(vec.len(), 2);
+    /// vec.push(3).unwrap();
+    /// assert_eq!(vec.as_slice(), &[1, 2, 3]);
+    ///
+    /// // Attempting to push a full vector results in an error
+    /// assert!(vec.push(4).is_err());
     /// # }
     /// ```
     pub fn push(&mut self, value: T) -> Result<()> {
@@ -418,7 +456,7 @@ impl <'a, T: 'a + Copy> FixedVec<'a, T> {
         }
     }
 
-    /// Adds all elements from `other` to this vector.
+    /// Copies all elements from slice `other` to this vector.
     ///
     /// # Example
     ///
@@ -426,10 +464,16 @@ impl <'a, T: 'a + Copy> FixedVec<'a, T> {
     /// # #[macro_use] extern crate fixedvec;
     /// # use fixedvec::FixedVec;
     /// # fn main() {
-    /// let mut space = alloc_stack!([u8; 16]);
+    /// let mut space = alloc_stack!([u8; 5]);
     /// let mut vec = FixedVec::new(&mut space);
+    ///
+    /// // All elements are pushed to vector
     /// vec.push_all(&[1, 2, 3, 4]).unwrap();
-    /// assert_eq!(&[1, 2, 3, 4], vec.as_slice());
+    /// assert_eq!(vec.as_slice(), &[1, 2, 3, 4]);
+    ///
+    /// // If there is insufficient space, NO values are pushed
+    /// assert!(vec.push_all(&[5, 6, 7]).is_err());
+    /// assert_eq!(vec.as_slice(), &[1, 2, 3, 4]);
     /// # }
     /// ```
     pub fn push_all(&mut self, other: &[T]) -> Result<()> {
@@ -452,7 +496,7 @@ impl <'a, T: 'a + Copy> FixedVec<'a, T> {
     /// # #[macro_use] extern crate fixedvec;
     /// # use fixedvec::FixedVec;
     /// # fn main() {
-    /// let mut space = alloc_stack!([u8; 16]);
+    /// let mut space = alloc_stack!([u8; 10]);
     /// let mut vec = FixedVec::new(&mut space);
     /// vec.push_all(&[1, 2, 3]).unwrap();
     /// assert_eq!(vec.len(), 3);
@@ -473,12 +517,12 @@ impl <'a, T: 'a + Copy> FixedVec<'a, T> {
     /// # #[macro_use] extern crate fixedvec;
     /// # use fixedvec::FixedVec;
     /// # fn main() {
-    /// let mut space = alloc_stack!([u8; 16]);
+    /// let mut space = alloc_stack!([u8; 10]);
     /// let mut vec = FixedVec::new(&mut space);
     ///
     /// vec.push_all(&[1, 2, 3]).unwrap();
     /// vec.map_in_place(|x: &mut u8| { *x *= 2 });
-    /// assert_eq!(&[2, 4, 6], vec.as_slice());
+    /// assert_eq!(vec.as_slice(), &[2, 4, 6]);
     /// # }
     /// ```
     pub fn map_in_place<F>(&mut self, f: F) where F: Fn(&mut T) {
@@ -495,15 +539,16 @@ impl <'a, T: 'a + Copy> FixedVec<'a, T> {
     /// # #[macro_use] extern crate fixedvec;
     /// # use fixedvec::FixedVec;
     /// # fn main() {
-    /// let mut space = alloc_stack!([u8; 16]);
+    /// let mut space = alloc_stack!([u8; 10]);
     /// let mut vec = FixedVec::new(&mut space);
     /// vec.push_all(&[1, 2, 3]).unwrap();
-    /// let mut iter = vec.iter();
-    ///
-    /// assert_eq!(iter.next(), Some(1));
-    /// assert_eq!(iter.next(), Some(2));
-    /// assert_eq!(iter.next(), Some(3));
-    /// assert_eq!(iter.next(), None);
+    /// {
+    ///     let mut iter = vec.iter();
+    ///     assert_eq!(iter.next(), Some(1));
+    ///     assert_eq!(iter.next(), Some(2));
+    ///     assert_eq!(iter.next(), Some(3));
+    ///     assert_eq!(iter.next(), None);
+    /// }
     /// # }
     /// ```
     pub fn iter(&'a self) -> Iter<'a, T> {
@@ -525,12 +570,12 @@ impl <'a, T: 'a + Copy> FixedVec<'a, T> {
     /// # #[macro_use] extern crate fixedvec;
     /// # use fixedvec::FixedVec;
     /// # fn main() {
-    /// let mut space = alloc_stack!([u8; 16]);
+    /// let mut space = alloc_stack!([u8; 10]);
     /// let mut vec = FixedVec::new(&mut space);
-    /// vec.push_all(&[0, 1, 2, 3]).unwrap();
     ///
+    /// vec.push_all(&[0, 1, 2, 3]).unwrap();
     /// assert_eq!(vec.swap_remove(1), 1);
-    /// assert_eq!(&[0, 3, 2], vec.as_slice());
+    /// assert_eq!(vec.as_slice(), &[0, 3, 2]);
     /// # }
     /// ```
     pub fn swap_remove(&mut self, index: usize) -> T {
@@ -544,7 +589,7 @@ impl <'a, T: 'a + Copy> FixedVec<'a, T> {
         }
     }
 
-    /// Resives the vector in-place so that `len()` is equal to `new_len`.
+    /// Resizes the vector in-place so that `len()` is equal to `new_len`.
     ///
     /// New elements (if needed) are cloned from `value`.
     ///
@@ -558,13 +603,14 @@ impl <'a, T: 'a + Copy> FixedVec<'a, T> {
     /// # #[macro_use] extern crate fixedvec;
     /// # use fixedvec::FixedVec;
     /// # fn main() {
-    /// let mut space = alloc_stack!([u8; 16]);
+    /// let mut space = alloc_stack!([u8; 10]);
     /// let mut vec = FixedVec::new(&mut space);
+    ///
     /// assert_eq!(vec.len(), 0);
     /// vec.resize(5, 255);
-    /// assert_eq!(&[255, 255, 255, 255, 255], vec.as_slice());
+    /// assert_eq!(vec.as_slice(), &[255, 255, 255, 255, 255]);
     /// vec.resize(2, 0);
-    /// assert_eq!(&[255, 255], vec.as_slice());
+    /// assert_eq!(vec.as_slice(), &[255, 255]);
     /// # }
     /// ```
     pub fn resize(&mut self, new_len: usize, value: T) {
@@ -579,7 +625,7 @@ impl <'a, T: 'a + Copy> FixedVec<'a, T> {
         }
     }
 
-    /// Retains only the elements specificed by the predicate.
+    /// Retains only the elements specified by the predicate.
     ///
     /// In other words, remove all elements `e` such that `f(&e)` returns
     /// false. This method operates in-place, in O(N) time, and preserves the
@@ -591,8 +637,9 @@ impl <'a, T: 'a + Copy> FixedVec<'a, T> {
     /// # #[macro_use] extern crate fixedvec;
     /// # use fixedvec::FixedVec;
     /// # fn main() {
-    /// let mut space = alloc_stack!([u8; 16]);
+    /// let mut space = alloc_stack!([u8; 10]);
     /// let mut vec = FixedVec::new(&mut space);
+    ///
     /// vec.push_all(&[1, 2, 3, 4]).unwrap();
     /// vec.retain(|&x| x%2 == 0);
     /// assert_eq!(vec.as_slice(), &[2, 4]);
@@ -624,7 +671,7 @@ impl<'a, T> FixedVec<'a, T> where T: 'a + Copy + PartialEq<T> {
     /// # #[macro_use] extern crate fixedvec;
     /// # use fixedvec::FixedVec;
     /// # fn main() {
-    /// let mut space = alloc_stack!([u8; 16]);
+    /// let mut space = alloc_stack!([u8; 10]);
     /// let mut vec = FixedVec::new(&mut space);
     /// vec.push_all(&[1, 2, 2, 3, 2]).unwrap();
     /// vec.dedup();
