@@ -166,7 +166,7 @@ pub struct Iter<'a, T: 'a + Copy> {
     idx: usize,
 }
 
-impl <'a, T: 'a + Copy> FixedVec<'a, T> {
+impl <'a, T> FixedVec<'a, T> where T: 'a + Copy {
     /// Create a new `FixedVec` from the provided slice, in the process taking
     /// ownership of the slice.
     ///
@@ -700,7 +700,11 @@ impl<'a, T> FixedVec<'a, T> where T: 'a + Copy + PartialEq<T> {
     }
 }
 
-impl<'a, T: 'a + Copy> Iterator for Iter<'a, T> {
+///////////////////////////////////////////////////////////////////////////////
+// Common trait implementations
+///////////////////////////////////////////////////////////////////////////////
+
+impl<'a, T> Iterator for Iter<'a, T> where T: Copy {
     type Item = T;
 
     #[inline]
@@ -719,17 +723,17 @@ impl<'a, T: 'a + Copy> Iterator for Iter<'a, T> {
     }
 }
 
-impl<'a, T: 'a + Copy> ExactSizeIterator for Iter<'a, T> {}
+impl<'a, T> ExactSizeIterator for Iter<'a, T> where T: Copy {}
 
-impl<'a, T: Copy + Hash> Hash for FixedVec<'a, T> {
+impl<'a, T> Hash for FixedVec<'a, T> where T: Copy + Hash {
     #[inline]
     fn hash<H: Hasher>(&self, state: &mut H) {
         Hash::hash(&*self.memory, state)
     }
 }
 
-impl <'a, A: 'a + Copy> Extend<A> for FixedVec<'a, A> {
-    fn extend<T: IntoIterator<Item=A>>(&mut self, iterable: T) {
+impl <'a, T> Extend<T> for FixedVec<'a, T> where T: Copy {
+    fn extend<I: IntoIterator<Item=T>>(&mut self, iterable: I) {
         if self.available() == 0 { return; }
         for n in iterable {
             self.memory[self.len] = n;
@@ -739,7 +743,7 @@ impl <'a, A: 'a + Copy> Extend<A> for FixedVec<'a, A> {
     }
 }
 
-impl<'a, T: Copy> ops::Index<usize> for FixedVec<'a, T> {
+impl<'a, T> ops::Index<usize> for FixedVec<'a, T> where T: Copy {
     type Output = T;
 
     #[inline]
@@ -748,14 +752,14 @@ impl<'a, T: Copy> ops::Index<usize> for FixedVec<'a, T> {
     }
 }
 
-impl<'a, T: Copy> ops::IndexMut<usize> for FixedVec<'a, T> {
+impl<'a, T> ops::IndexMut<usize> for FixedVec<'a, T> where T: Copy {
     #[inline]
-    fn index_mut(&mut self, index: usize) -> &mut T{
+    fn index_mut(&mut self, index: usize) -> &mut T {
         &mut (self.memory)[index]
     }
 }
 
-impl<'a, T: Copy + PartialEq> PartialEq for FixedVec<'a, T> {
+impl<'a, T> PartialEq for FixedVec<'a, T> where T: Copy + PartialEq {
     fn eq(&self, other: &FixedVec<'a, T>) -> bool {
         if self.len() != other.len() { return false; }
 
@@ -765,7 +769,7 @@ impl<'a, T: Copy + PartialEq> PartialEq for FixedVec<'a, T> {
     }
 }
 
-impl<'a, T: Copy + Eq> Eq for FixedVec<'a, T> { }
+impl<'a, T> Eq for FixedVec<'a, T> where T: Copy + Eq { }
 
 #[cfg(test)]
 mod test {
