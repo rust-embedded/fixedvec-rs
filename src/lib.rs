@@ -19,6 +19,9 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
+//
+// Portions of this work are based on the Rust standard library implementation
+// of Vec: https://github.com/rust-lang/rust/blob/master/src/libcollections/vec.rs
 
 #![crate_type = "lib"]
 #![crate_name = "fixedvec"]
