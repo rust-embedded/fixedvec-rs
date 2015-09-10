@@ -206,6 +206,7 @@ impl <'a, T: 'a + Copy> FixedVec<'a, T> {
     /// assert_eq!(vec.capacity(), 16);
     /// # }
     /// ```
+    #[inline]
     pub fn capacity(&self) -> usize {
         self.memory.len()
     }
@@ -226,6 +227,7 @@ impl <'a, T: 'a + Copy> FixedVec<'a, T> {
     /// assert_eq!(vec.len(), 2);
     /// # }
     /// ```
+    #[inline]
     pub fn len(&self) -> usize {
         self.len
     }
@@ -420,6 +422,7 @@ impl <'a, T: 'a + Copy> FixedVec<'a, T> {
     /// assert!(vec.push(4).is_err());
     /// # }
     /// ```
+    #[inline]
     pub fn push(&mut self, value: T) -> Result<()> {
         if self.available() >= 1 {
             self.memory[self.len] = value;
@@ -447,6 +450,7 @@ impl <'a, T: 'a + Copy> FixedVec<'a, T> {
     /// assert_eq!(vec.pop(), None);
     /// # }
     /// ```
+    #[inline]
     pub fn pop(&mut self) -> Option<T> {
         if self.len > 0 {
             self.len -= 1;
@@ -476,6 +480,7 @@ impl <'a, T: 'a + Copy> FixedVec<'a, T> {
     /// assert_eq!(vec.as_slice(), &[1, 2, 3, 4]);
     /// # }
     /// ```
+    #[inline]
     pub fn push_all(&mut self, other: &[T]) -> Result<()> {
         if other.len() > self.available() {
             Err(ErrorKind::NoSpace)
@@ -551,6 +556,7 @@ impl <'a, T: 'a + Copy> FixedVec<'a, T> {
     /// }
     /// # }
     /// ```
+    #[inline]
     pub fn iter(&'a self) -> Iter<'a, T> {
         Iter{list: self, idx: 0}
     }
