@@ -695,6 +695,44 @@ impl <'a, T> FixedVec<'a, T> where T: 'a + Copy {
         }
         self.len = tail;
     }
+
+    /// Returns a reference to the element at the given index, or `None` if the
+    /// index is out of bounds.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # #[macro_use] extern crate fixedvec;
+    /// # use fixedvec::FixedVec;
+    /// # fn main() {
+    /// let mut space = alloc_stack!([u8; 10]);
+    /// let mut vec = FixedVec::new(&mut space);
+    ///
+    /// vec.push_all(&[10, 40, 30]).unwrap();
+    /// assert_eq!(Some(&40), vec.get(1));
+    /// assert_eq!(None, vec.get(3));
+    /// # }
+    /// ```
+    pub fn get(&self, index: usize) -> Option<&T> {
+        self.as_slice().get(index)
+    }
+
+    /// Returns a mutable reference to the element at the given index, or `None`
+    /// if the index is out of bounds.
+    pub fn get_mut(&mut self, index: usize) -> Option<&mut T> {
+        self.as_mut_slice().get_mut(index)
+    }
+    /// Returns a reference to the element at the given index, without doing
+    /// bounds checking
+    pub unsafe fn get_unchecked(&self, index: usize) -> &T {
+        self.as_slice().get_unchecked(index)
+    }
+
+    /// Returns a mutable reference to the element at the given index, without
+    /// doing bounds checking
+    pub unsafe fn get_unchecked_mut(&mut self, index: usize) -> &mut T {
+        self.as_mut_slice().get_unchecked_mut(index)
+    }
 }
 
 impl<'a, T> FixedVec<'a, T> where T: 'a + Copy + PartialEq<T> {
