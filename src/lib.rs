@@ -561,13 +561,13 @@ impl <'a, T> FixedVec<'a, T> where T: 'a + Copy {
     /// # }
     /// ```
     #[inline]
-    pub fn iter(&'a self) -> Iter<'a, T> {
+    pub fn iter(&self) -> Iter<T> {
         let (slice, _) = self.memory.split_at(self.len);
         slice.iter()
     }
 
     #[inline]
-    pub fn iter_mut(&'a mut self) -> IterMut<'a, T> {
+    pub fn iter_mut(&mut self) -> IterMut<T> {
         let (mut slice, _) = self.memory.split_at_mut(self.len);
         slice.iter_mut()
     }
