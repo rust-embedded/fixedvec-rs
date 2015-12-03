@@ -489,8 +489,8 @@ impl <'a, T> FixedVec<'a, T> where T: 'a + Copy {
         if other.len() > self.available() {
             Err(ErrorKind::NoSpace)
         } else {
-            for i in 0..other.len() {
-                self.memory[self.len] = other[i];
+            for item in other.iter() {
+                self.memory[self.len] = *item;
                 self.len += 1;
             }
             Ok(())
