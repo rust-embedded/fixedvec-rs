@@ -566,6 +566,26 @@ impl <'a, T> FixedVec<'a, T> where T: 'a + Copy {
         slice.iter()
     }
 
+
+    /// Provides a mutable forward iterator.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # #[macro_use] extern crate fixedvec;
+    /// # use fixedvec::FixedVec;
+    /// # fn main() {
+    /// let mut space = alloc_stack!([u8; 10]);
+    /// let mut vec = FixedVec::new(&mut space);
+    /// vec.push_all(&[1, 2, 3]).unwrap();
+    /// {
+    ///     let mut iter = vec.iter_mut();
+    ///     let mut x = iter.next().unwrap();
+    ///     *x = 5;
+    /// }
+    /// assert_eq!(vec.as_slice(), &[5, 2, 3]);
+    /// # }
+    /// ```
     #[inline]
     pub fn iter_mut(&mut self) -> IterMut<T> {
         let (mut slice, _) = self.memory.split_at_mut(self.len);
