@@ -168,10 +168,8 @@ pub struct FixedVec<'a, T: 'a + Copy> {
     len: usize,
 }
 
-pub struct Iter<'a, T: 'a + Copy> {
-    list: &'a FixedVec<'a, T>,
-    idx: usize,
-}
+pub use core::slice::Iter as Iter;
+pub use core::slice::IterMut as IterMut;
 
 impl <'a, T> FixedVec<'a, T> where T: 'a + Copy {
     /// Create a new `FixedVec` from the provided slice, in the process taking
@@ -555,16 +553,23 @@ impl <'a, T> FixedVec<'a, T> where T: 'a + Copy {
     /// vec.push_all(&[1, 2, 3]).unwrap();
     /// {
     ///     let mut iter = vec.iter();
-    ///     assert_eq!(iter.next(), Some(1));
-    ///     assert_eq!(iter.next(), Some(2));
-    ///     assert_eq!(iter.next(), Some(3));
+    ///     assert_eq!(iter.next(), Some(&1));
+    ///     assert_eq!(iter.next(), Some(&2));
+    ///     assert_eq!(iter.next(), Some(&3));
     ///     assert_eq!(iter.next(), None);
     /// }
     /// # }
     /// ```
     #[inline]
     pub fn iter(&'a self) -> Iter<'a, T> {
-        Iter{list: self, idx: 0}
+        let (slice, _) = self.memory.split_at(self.len);
+        slice.iter()
+    }
+
+    #[inline]
+    pub fn iter_mut(&'a mut self) -> IterMut<'a, T> {
+        let (mut slice, _) = self.memory.split_at_mut(self.len);
+        slice.iter_mut()
     }
 
     /// Removes an element from anywhere in the vector and returns it,
@@ -710,27 +715,24 @@ impl<'a, T> FixedVec<'a, T> where T: 'a + Copy + PartialEq<T> {
 // Common trait implementations
 ///////////////////////////////////////////////////////////////////////////////
 
-impl<'a, T> Iterator for Iter<'a, T> where T: Copy {
-    type Item = T;
 
-    #[inline]
-    fn next(&mut self) -> Option<T> {
-        if self.idx >= self.list.len() {
-            None
-        } else {
-            self.idx += 1;
-            Some(self.list[self.idx - 1])
-        }
-    }
+impl<'a, T: Copy> IntoIterator for &'a FixedVec<'a, T> {
+    type Item = &'a T;
+    type IntoIter = Iter<'a, T>;
 
-    #[inline]
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        let nelem = self.list.len() - self.idx;
-        (nelem, Some(nelem))
+    fn into_iter(self) -> Iter<'a, T> {
+        self.iter()
     }
 }
 
-impl<'a, T> ExactSizeIterator for Iter<'a, T> where T: Copy {}
+impl<'a, T: Copy> IntoIterator for &'a mut FixedVec<'a, T> {
+    type Item = &'a mut T;
+    type IntoIter = IterMut<'a, T>;
+
+    fn into_iter(mut self) -> IterMut<'a, T> {
+        self.iter_mut()
+    }
+}
 
 impl<'a, T> Hash for FixedVec<'a, T> where T: Copy + Hash {
     #[inline]
@@ -845,7 +847,7 @@ mod test {
         let mut space = alloc_stack!([u8; 10]);
         let mut vec = FixedVec::new(&mut space);
         vec.push_all(&[1, 2, 3, 4, 5]).unwrap();
-        let result: Vec<u8> = vec.iter().collect();
+        let result: Vec<u8> = vec.iter().map(|&x| x).collect();
         assert_eq!(vec.as_slice(), &result[..]);
     }
 
