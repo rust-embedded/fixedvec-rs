@@ -717,19 +717,79 @@ impl <'a, T> FixedVec<'a, T> where T: 'a + Copy {
         self.as_slice().get(index)
     }
 
-    /// Returns a mutable reference to the element at the given index, or `None`
-    /// if the index is out of bounds.
+    /// Returns a mutable reference to the element at the given index, or
+    /// `None` if the index is out of bounds.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # #[macro_use] extern crate fixedvec;
+    /// # use fixedvec::FixedVec;
+    /// # fn main() {
+    /// let mut space = alloc_stack!([u8; 10]);
+    /// let mut vec = FixedVec::new(&mut space);
+    ///
+    /// vec.push_all(&[10, 40, 30]).unwrap();
+    /// {
+    ///     let x = vec.get_mut(1).unwrap();
+    ///     *x = 50;
+    /// }
+    /// assert_eq!(Some(&50), vec.get(1));
+    /// assert_eq!(None, vec.get(3));
+    /// # }
+    /// ```
     pub fn get_mut(&mut self, index: usize) -> Option<&mut T> {
         self.as_mut_slice().get_mut(index)
     }
+
     /// Returns a reference to the element at the given index, without doing
-    /// bounds checking
+    /// bounds checking. Note that the result of an invalid index is undefined,
+    /// and may not panic.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # #[macro_use] extern crate fixedvec;
+    /// # use fixedvec::FixedVec;
+    /// # fn main() {
+    /// let mut space = alloc_stack!([u8; 10]);
+    /// let mut vec = FixedVec::new(&mut space);
+    ///
+    /// vec.push_all(&[10, 40, 30]).unwrap();
+    /// assert_eq!(&40, unsafe { vec.get_unchecked(1) });
+    ///
+    /// // Index beyond bounds is undefined
+    /// //assert_eq!(None, vec.get(3));
+    /// # }
+    /// ```
     pub unsafe fn get_unchecked(&self, index: usize) -> &T {
         self.as_slice().get_unchecked(index)
     }
 
     /// Returns a mutable reference to the element at the given index, without
-    /// doing bounds checking
+    /// doing bounds checking. Note that the result of an invalid index is
+    /// undefined, and may not panic.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # #[macro_use] extern crate fixedvec;
+    /// # use fixedvec::FixedVec;
+    /// # fn main() {
+    /// let mut space = alloc_stack!([u8; 10]);
+    /// let mut vec = FixedVec::new(&mut space);
+    ///
+    /// vec.push_all(&[10, 40, 30]).unwrap();
+    /// {
+    ///     let mut x = unsafe { vec.get_unchecked_mut(1) };
+    ///     *x = 50;
+    /// }
+    /// assert_eq!(Some(&50), vec.get(1));
+    ///
+    /// // Index beyond bounds is undefined
+    /// //assert_eq!(None, vec.get(3));
+    /// # }
+    /// ```
     pub unsafe fn get_unchecked_mut(&mut self, index: usize) -> &mut T {
         self.as_mut_slice().get_unchecked_mut(index)
     }
