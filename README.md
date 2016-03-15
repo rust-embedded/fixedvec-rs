@@ -2,6 +2,7 @@ fixedvec
 ========
 
 [![Build Status] (https://img.shields.io/travis/nastevens/fixedvec-rs.svg)](https://travis-ci.org/nastevens/fixedvec-rs)
+[![Clippy Linting Result](https://clippy.bashy.io/github/nastevens/fixedvec-rs/master/badge.svg)](https://clippy.bashy.io/github/nastevens/fixedvec-rs/master/log)
 [![Version](https://img.shields.io/crates/v/fixedvec.svg)](https://crates.io/crates/fixedvec)
 [![License](https://img.shields.io/crates/l/fixedvec.svg)](https://github.com/nastevens/fixedvec-rs/blob/master/README.md#license)
 
