@@ -64,7 +64,7 @@ License
 -------
 
 ```
-Copyright (c) 2015, Nick Stevens <nick@bitcurry.com>
+Copyright (c) 2015-2016, Nick Stevens <nick@bitcurry.com>
 
 The MIT License (MIT)
 
