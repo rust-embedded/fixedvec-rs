@@ -26,8 +26,6 @@
 #![crate_type = "lib"]
 #![crate_name = "fixedvec"]
 
-#![allow(unused_features)]
-#![feature(no_std, core_slice_ext)]
 #![no_std]
 
 //! Heapless Vec implementation using only libcore
@@ -103,9 +101,9 @@
 //! Typical usage looks like the following:
 //!
 //! ```rust
-//! #![feature(core)]
-//! extern crate core;
+//! #![no_std]
 //!
+//! extern crate libc;
 //! #[macro_use] extern crate fixedvec;
 //!
 //! use fixedvec::FixedVec;
