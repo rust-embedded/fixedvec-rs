@@ -1,15 +1,15 @@
 [package]
 name = "fixedvec"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Nick Stevens <nick@bitcurry.com>"]
 
 description = """
 A heapless version of the Rust vector type.
 """
 
-repository = "https://github.com/nastevens/fixedvec-rs"
-homepage = "https://github.com/nastevens/fixedvec-rs"
-documentation = "http://nastevens.github.io/fixedvec-rs/"
+repository = "https://github.com/rust-embedded/fixedvec-rs"
+homepage = "https://github.com/rust-embedded/fixedvec-rs"
+documentation = "http://rust-embedded.github.io/fixedvec-rs/"
 readme = "README.md"
 
 keywords = ["buffer", "vector", "no_std", "core", "heapless"]

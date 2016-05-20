@@ -1,12 +1,12 @@
 fixedvec
 ========
 
-[![Build Status] (https://img.shields.io/travis/nastevens/fixedvec-rs.svg)](https://travis-ci.org/nastevens/fixedvec-rs)
-[![Clippy Linting Result](https://clippy.bashy.io/github/nastevens/fixedvec-rs/master/badge.svg)](https://clippy.bashy.io/github/nastevens/fixedvec-rs/master/log)
+[![Build Status] (https://img.shields.io/travis/rust-embedded/fixedvec-rs.svg)](https://travis-ci.org/rust-embedded/fixedvec-rs)
+[![Clippy Linting Result](https://clippy.bashy.io/github/rust-embedded/fixedvec-rs/master/badge.svg)](https://clippy.bashy.io/github/rust-embedded/fixedvec-rs/master/log)
 [![Version](https://img.shields.io/crates/v/fixedvec.svg)](https://crates.io/crates/fixedvec)
-[![License](https://img.shields.io/crates/l/fixedvec.svg)](https://github.com/nastevens/fixedvec-rs/blob/master/README.md#license)
+[![License](https://img.shields.io/crates/l/fixedvec.svg)](https://github.com/rust-embedded/fixedvec-rs/blob/master/README.md#license)
 
-- [API Documentation](http://nastevens.github.io/fixedvec-rs/)
+- [API Documentation](http://rust-embedded.github.io/fixedvec-rs/)
 
 `fixedvec` is a Rust library/crate providing a heapless version of the Rust
 vector type. Although more limited than the libstd version, fixedvec provides a
