@@ -2,7 +2,6 @@ fixedvec
 ========
 
 [![Build Status] (https://img.shields.io/travis/rust-embedded/fixedvec-rs.svg)](https://travis-ci.org/rust-embedded/fixedvec-rs)
-[![Clippy Linting Result](https://clippy.bashy.io/github/rust-embedded/fixedvec-rs/master/badge.svg)](https://clippy.bashy.io/github/rust-embedded/fixedvec-rs/master/log)
 [![Version](https://img.shields.io/crates/v/fixedvec.svg)](https://crates.io/crates/fixedvec)
 [![License](https://img.shields.io/crates/l/fixedvec.svg)](https://github.com/rust-embedded/fixedvec-rs/blob/master/README.md#license)
 
