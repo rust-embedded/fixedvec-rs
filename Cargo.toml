@@ -15,6 +15,3 @@ readme = "README.md"
 keywords = ["buffer", "vector", "no_std", "core", "heapless"]
 
 license = "MIT"
-
-[dependencies]
-libc = "0.2.11"
