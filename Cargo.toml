@@ -1,6 +1,6 @@
 [package]
 name = "fixedvec"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Nick Stevens <nick@bitcurry.com>"]
 
 description = """
