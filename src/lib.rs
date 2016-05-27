@@ -101,14 +101,20 @@
 //! Typical usage looks like the following:
 //!
 //! ```rust
+//! #![feature(lang_items, libc, start)]
 //! #![no_std]
+//! #![no_main]
 //!
 //! extern crate libc;
-//! #[macro_use] extern crate fixedvec;
+//!
+//! // Pull in fixedvec
+//! #[macro_use]
+//! extern crate fixedvec;
 //!
 //! use fixedvec::FixedVec;
 //!
-//! fn main() {
+//! #[no_mangle]
+//! pub extern fn main(argc: i32, argv: *const *const u8) -> i32 {
 //!     let mut preallocated_space = alloc_stack!([u8; 10]);
 //!     let mut vec = FixedVec::new(&mut preallocated_space);
 //!     assert_eq!(vec.len(), 0);
@@ -119,7 +125,14 @@
 //!
 //!     vec[1] = 5;
 //!     assert_eq!(vec[1], 5);
+//!
+//!     0
 //! }
+//!
+//! // These functions and traits are usually provided by libstd: we have to
+//! // provide them ourselves in no_std.
+//! #[lang = "eh_personality"] extern "C" fn eh_personality() {}
+//! #[lang = "panic_fmt"] extern "C" fn panic_fmt() -> ! { loop {} }
 //! ```
 
 use core::hash::{Hash, Hasher};
