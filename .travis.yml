@@ -7,17 +7,5 @@ script:
   - cargo test --verbose
   - cargo doc
 
-env:
-  global:
-    secure: "Bce9DCZMa5jAfvn3QKsOsWrTcM/qI+x2Q32rn2DKcy8rDNilZmoR8DXUisiqLoFB1xuc88Sj9P9Zu9oXoTwU7BDECBxMzayZgdjxHUS8m9hQd4RmuN8nRvLkGKjc74Fk4L881t1nkuwfbKOlpw2ev68Vn84luPlJToaDrAIc9KdjSr9Qyhar+vhQKy+hv1x/hp/1QVF7oYr+R7slXMX4HihXc2RlXuk89lslWRqd4SY7N93xywEv4kn+fE4AKS0qo8WQCKcpjMKTqvof7T2O2Cbpa0aLeHlS9WZ+/yM82s/cg2rvXWHOWclAgwuIS//RUJy8LPa3MXkMX2rz/L1NeO9Ff347SWwdw57MUnCNnWO/Tdk6qnzRLkjYlrMwFeDQtaRw8NTMKgjCvuT+bvQFXLsPXi6vrUNCab1zA2p/xiwPtCc4Vg55TnSj15Ryc81kokP+zlHNC5NHZe/fKmORaLjuIKx4n7gCGZiuCZYypLdG0MS/lQO7afK4XfjHVtEKqJpwxdY5lClWVZuie/dsDeYANQS7/ClMWcqLPZfYul2BF7furNn1g408iZsB/eFimS0pc8/HT3o0ju5Fgh5Ny1k5Xt/xCwp5LK1L6ZhSazTeHElecq6MNSe78HI/apFkc3k+QLiEJudwF/cnvSHT8KJkEBy8Z0rdJdQ07psZyvE="
-
-# Publish documentation on successful master build using the
-# ghp-import python package
-after_success: ! '[ $TRAVIS_BRANCH = master ] && [ $TRAVIS_PULL_REQUEST = false ]
-  && echo "<meta http-equiv=refresh content=0;url=fixedvec/index.html>" > target/doc/index.html
-  && pip install --user ghp-import
-  && ghp-import -n target/doc
-  && git push -fq https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages'
-
 # Use Travis container-based infrastructure
 sudo: false

@@ -9,7 +9,7 @@ A heapless version of the Rust vector type.
 
 repository = "https://github.com/rust-embedded/fixedvec-rs"
 homepage = "https://github.com/rust-embedded/fixedvec-rs"
-documentation = "http://rust-embedded.github.io/fixedvec-rs/"
+documentation = "https://docs.rs/fixedvec"
 readme = "README.md"
 
 keywords = ["buffer", "vector", "no_std", "core", "heapless"]
