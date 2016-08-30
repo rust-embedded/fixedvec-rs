@@ -133,6 +133,25 @@
 //! // provide them ourselves in no_std.
 //! #[lang = "eh_personality"] extern "C" fn eh_personality() {}
 //! #[lang = "panic_fmt"] extern "C" fn panic_fmt() -> ! { loop {} }
+//!
+//! # // Needed to allow doctest to compile/link cleanly with nostd
+//! # #[allow(non_snake_case)]
+//! # #[no_mangle]
+//! # pub extern "C" fn _Unwind_Resume() -> ! { loop {} }
+//! ```
+//!
+//! If you're building for an embedded system, you will also likely want to
+//! disable stack unwinding by adding the following section(s) to your
+//! Cargo.toml:
+//!
+//! ```toml
+//! [profile.dev]
+//! panic = "abort"
+//!
+//! [profile.release]
+//! panic = "abort"
+//!
+//! # ..etc
 //! ```
 
 use core::hash::{Hash, Hasher};
