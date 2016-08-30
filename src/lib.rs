@@ -198,10 +198,12 @@ pub struct FixedVec<'a, T: 'a + Copy> {
     len: usize,
 }
 
-pub use core::slice::Iter as Iter;
-pub use core::slice::IterMut as IterMut;
+pub use core::slice::Iter;
+pub use core::slice::IterMut;
 
-impl <'a, T> FixedVec<'a, T> where T: 'a + Copy {
+impl<'a, T> FixedVec<'a, T>
+    where T: 'a + Copy
+{
     /// Create a new `FixedVec` from the provided slice, in the process taking
     /// ownership of the slice.
     ///
@@ -389,7 +391,9 @@ impl <'a, T> FixedVec<'a, T> where T: 'a + Copy {
             self.len += 1;
             let mut i = self.len;
             loop {
-                if i == index { break; }
+                if i == index {
+                    break;
+                }
                 self.memory[i] = self.memory[i - 1];
                 i -= 1;
             }
@@ -564,7 +568,9 @@ impl <'a, T> FixedVec<'a, T> where T: 'a + Copy {
     /// assert_eq!(vec.as_slice(), &[2, 4, 6]);
     /// # }
     /// ```
-    pub fn map_in_place<F>(&mut self, f: F) where F: Fn(&mut T) {
+    pub fn map_in_place<F>(&mut self, f: F)
+        where F: Fn(&mut T)
+    {
         for i in 0..self.len {
             f(&mut self.memory[i]);
         }
@@ -712,11 +718,15 @@ impl <'a, T> FixedVec<'a, T> where T: 'a + Copy {
     /// assert_eq!(vec.as_slice(), &[2, 4]);
     /// # }
     /// ```
-    pub fn retain<F>(&mut self, f: F) where F: Fn(&T) -> bool {
+    pub fn retain<F>(&mut self, f: F)
+        where F: Fn(&T) -> bool
+    {
         let mut head: usize = 0;
         let mut tail: usize = 0;
         loop {
-            if head >= self.len { break; }
+            if head >= self.len {
+                break;
+            }
             if f(&self.memory[head]) {
                 self.memory[tail] = self.memory[head];
                 tail += 1;
@@ -825,7 +835,9 @@ impl <'a, T> FixedVec<'a, T> where T: 'a + Copy {
     }
 }
 
-impl<'a, T> FixedVec<'a, T> where T: 'a + Copy + PartialEq<T> {
+impl<'a, T> FixedVec<'a, T>
+    where T: 'a + Copy + PartialEq<T>
+{
     /// Removes consecutive repeated elements in the vector in O(N) time.
     ///
     /// If the vector is sorted, this removes all duplicates.
@@ -844,11 +856,15 @@ impl<'a, T> FixedVec<'a, T> where T: 'a + Copy + PartialEq<T> {
     /// # }
     /// ```
     pub fn dedup(&mut self) {
-        if self.len <= 1 { return; }
+        if self.len <= 1 {
+            return;
+        }
         let mut head: usize = 1;
         let mut tail: usize = 0;
         loop {
-            if head >= self.len { break; }
+            if head >= self.len {
+                break;
+            }
             if self.memory[head] != self.memory[tail] {
                 tail += 1;
                 self.memory[tail] = self.memory[head];
@@ -858,11 +874,6 @@ impl<'a, T> FixedVec<'a, T> where T: 'a + Copy + PartialEq<T> {
         self.len = tail + 1;
     }
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// Common trait implementations
-///////////////////////////////////////////////////////////////////////////////
-
 
 impl<'a, T: Copy> IntoIterator for &'a FixedVec<'a, T> {
     type Item = &'a T;
@@ -882,25 +893,35 @@ impl<'a, T: Copy> IntoIterator for &'a mut FixedVec<'a, T> {
     }
 }
 
-impl<'a, T> Hash for FixedVec<'a, T> where T: Copy + Hash {
+impl<'a, T> Hash for FixedVec<'a, T>
+    where T: Copy + Hash
+{
     #[inline]
     fn hash<H: Hasher>(&self, state: &mut H) {
         Hash::hash(&*self.memory, state)
     }
 }
 
-impl <'a, T> Extend<T> for FixedVec<'a, T> where T: Copy {
-    fn extend<I: IntoIterator<Item=T>>(&mut self, iterable: I) {
-        if self.available() == 0 { return; }
+impl<'a, T> Extend<T> for FixedVec<'a, T>
+    where T: Copy
+{
+    fn extend<I: IntoIterator<Item = T>>(&mut self, iterable: I) {
+        if self.available() == 0 {
+            return;
+        }
         for n in iterable {
             self.memory[self.len] = n;
             self.len += 1;
-            if self.available() == 0 { break; }
+            if self.available() == 0 {
+                break;
+            }
         }
     }
 }
 
-impl<'a, T> ops::Index<usize> for FixedVec<'a, T> where T: Copy {
+impl<'a, T> ops::Index<usize> for FixedVec<'a, T>
+    where T: Copy
+{
     type Output = T;
 
     #[inline]
@@ -909,24 +930,28 @@ impl<'a, T> ops::Index<usize> for FixedVec<'a, T> where T: Copy {
     }
 }
 
-impl<'a, T> ops::IndexMut<usize> for FixedVec<'a, T> where T: Copy {
+impl<'a, T> ops::IndexMut<usize> for FixedVec<'a, T>
+    where T: Copy
+{
     #[inline]
     fn index_mut(&mut self, index: usize) -> &mut T {
         &mut (self.memory)[index]
     }
 }
 
-impl<'a, T> PartialEq for FixedVec<'a, T> where T: Copy + PartialEq {
+impl<'a, T> PartialEq for FixedVec<'a, T>
+    where T: Copy + PartialEq
+{
     fn eq(&self, other: &FixedVec<'a, T>) -> bool {
-        if self.len() != other.len() { return false; }
+        if self.len() != other.len() {
+            return false;
+        }
 
-        (0..self.len()).all(|i| {
-            self[i] == other[i]
-        })
+        (0..self.len()).all(|i| self[i] == other[i])
     }
 }
 
-impl<'a, T> Eq for FixedVec<'a, T> where T: Copy + Eq { }
+impl<'a, T> Eq for FixedVec<'a, T> where T: Copy + Eq {}
 
 #[cfg(test)]
 mod test {
@@ -947,8 +972,8 @@ mod test {
         assert!(vec.push_all(&[] as &[u8]).is_ok());
         assert!(vec.push_all(&[1]).is_err());
         vec.clear();
-        vec.map_in_place(|x: &mut u8| { *x = 1 });
-        vec.retain(|_: &u8| { true });
+        vec.map_in_place(|x: &mut u8| *x = 1);
+        vec.retain(|_: &u8| true);
         vec.dedup();
         {
             let mut iter = vec.iter();
