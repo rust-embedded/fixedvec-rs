@@ -114,7 +114,7 @@
 //! use fixedvec::FixedVec;
 //!
 //! #[no_mangle]
-//! pub extern fn main(argc: i32, argv: *const *const u8) -> i32 {
+//! pub extern fn main(_argc: i32, _argv: *const *const u8) -> i32 {
 //!     let mut preallocated_space = alloc_stack!([u8; 10]);
 //!     let mut vec = FixedVec::new(&mut preallocated_space);
 //!     assert_eq!(vec.len(), 0);
