@@ -5,7 +5,7 @@ fixedvec
 [![Version](https://img.shields.io/crates/v/fixedvec.svg)](https://crates.io/crates/fixedvec)
 [![License](https://img.shields.io/crates/l/fixedvec.svg)](https://github.com/rust-embedded/fixedvec-rs/blob/master/README.md#license)
 
-- [API Documentation](http://docs.rs/fixedvec-rs/)
+- [API Documentation](http://docs.rs/fixedvec/)
 
 `fixedvec` is a Rust library/crate providing a heapless version of the Rust
 vector type. Although more limited than the libstd version, fixedvec provides a
