@@ -28,7 +28,7 @@ fixedvec = "*"
 
 Then add the following to your crate root:
 
-```rust
+```rust,ignore
 #[macro_use] extern crate fixedvec;
 ```
 
@@ -38,9 +38,6 @@ Example
 Buffering and mutating a list of bytes:
 
 ```rust
-#![feature(core)]
-extern crate core;
-
 #[macro_use] extern crate fixedvec;
 
 use fixedvec::FixedVec;

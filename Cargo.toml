@@ -2,16 +2,17 @@
 name = "fixedvec"
 version = "0.2.2"
 authors = ["Nick Stevens <nick@bitcurry.com>"]
-
-description = """
-A heapless version of the Rust vector type.
-"""
-
+description = "A heapless version of the Rust vector type."
 repository = "https://github.com/rust-embedded/fixedvec-rs"
 homepage = "https://github.com/rust-embedded/fixedvec-rs"
 documentation = "https://docs.rs/fixedvec"
 readme = "README.md"
-
 keywords = ["buffer", "vector", "no_std", "core", "heapless"]
-
 license = "MIT"
+build = "build.rs"
+
+[build-dependencies]
+skeptic = "0.5"
+
+[dev-dependencies]
+skeptic = "0.5"
