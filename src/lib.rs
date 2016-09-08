@@ -96,25 +96,18 @@
 //! * `drain`
 //! * `split_off`
 //!
-//! # Examples
+//! # Example
 //!
 //! Typical usage looks like the following:
 //!
-//! ```rust
-//! #![feature(lang_items, libc, start)]
-//! #![no_std]
-//! #![no_main]
-//!
-//! extern crate libc;
-//!
+//! ```
 //! // Pull in fixedvec
 //! #[macro_use]
 //! extern crate fixedvec;
 //!
 //! use fixedvec::FixedVec;
 //!
-//! #[no_mangle]
-//! pub extern fn main(_argc: i32, _argv: *const *const u8) -> i32 {
+//! fn main() {
 //!     let mut preallocated_space = alloc_stack!([u8; 10]);
 //!     let mut vec = FixedVec::new(&mut preallocated_space);
 //!     assert_eq!(vec.len(), 0);
@@ -125,34 +118,12 @@
 //!
 //!     vec[1] = 5;
 //!     assert_eq!(vec[1], 5);
-//!
-//!     0
 //! }
-//!
-//! // These functions and traits are usually provided by libstd: we have to
-//! // provide them ourselves in no_std.
-//! #[lang = "eh_personality"] extern "C" fn eh_personality() {}
-//! #[lang = "panic_fmt"] extern "C" fn panic_fmt() -> ! { loop {} }
-//!
-//! # // Needed to allow doctest to compile/link cleanly with nostd
-//! # #[allow(non_snake_case)]
-//! # #[no_mangle]
-//! # pub extern "C" fn _Unwind_Resume() -> ! { loop {} }
 //! ```
 //!
-//! If you're building for an embedded system, you will also likely want to
-//! disable stack unwinding by adding the following section(s) to your
-//! Cargo.toml:
-//!
-//! ```toml
-//! [profile.dev]
-//! panic = "abort"
-//!
-//! [profile.release]
-//! panic = "abort"
-//!
-//! # ..etc
-//! ```
+//! If you're building for an embedded system, you will want to refer to the
+//! Rust book section ["No stdlib"](https://doc.rust-lang.org/book/no-stdlib.html)
+//! for instructions on building executables using only libcore.
 
 use core::hash::{Hash, Hasher};
 use core::ops;

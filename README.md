@@ -15,9 +15,11 @@ cannot rely on the heap.
 Install/Use
 -----------
 
-You must be using the nightly Rust release to use `fixedvec`, as it relies on
-the unstable libcore feature. If you're building for an embedded system, you're
-probably on the nightly anyway though.
+`fixedvec` is tested against Rust 1.6 through stable, beta, and nightly.
+
+The `#![no_std]` attribute was stabilized for libraries in Rust 1.6, so that is
+the minimum Rust version for which `fixedvec` will compile. Note that building
+_binaries_ without libstd is still unstable and requires nightly Rust.
 
 To use `fixedvec`, add the following to your `Cargo.toml`:
 
