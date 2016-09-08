@@ -16,3 +16,11 @@ script:
 
 # Use Travis container-based infrastructure
 sudo: false
+
+# Send notifications to homu bot
+notifications:
+    webhooks: http://rust-embedded-bot.herokuapp.com/travis
+
+branches:
+  only:
+    - auto
