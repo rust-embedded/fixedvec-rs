@@ -1,4 +1,20 @@
+sudo: false
+
 language: rust
+
+cache: cargo
+
+addons:
+  apt:
+    sources:
+      - kalakris-cmake
+    packages:
+      - cmake
+      - libcurl4-openssl-dev
+      - libelf-dev
+      - libdw-dev
+      - binutils-dev
+
 rust:
   - 1.15.0
   - 1.16.0
@@ -6,10 +22,22 @@ rust:
   - beta
   - nightly
 
-script:
-  - cargo build --verbose
-  - cargo test --verbose
-  - cargo doc
+before_script:
+  - pip install 'travis-cargo<0.2' --user
+  - export PATH=$HOME/.local/bin:$PATH
+  - |
+      if [ $TRAVIS_RUST_VERSION = "stable" ]; then
+        cargo install cargo-update
+        export PATH=$HOME/.cargo/bin:$PATH
+        cargo install-update --allow-no-update rustfmt cargo-update
+      fi
 
-# Use Travis container-based infrastructure
-sudo: false
+script:
+  - travis-cargo build
+  - travis-cargo test
+  - travis-cargo bench
+  - travis-cargo --only stable doc -- --no-deps
+  - travis-cargo --only stable fmt
+
+after_success:
+  - travis-cargo coveralls --no-sudo --verify
