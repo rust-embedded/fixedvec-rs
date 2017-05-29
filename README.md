@@ -15,11 +15,11 @@ cannot rely on the heap.
 Install/Use
 -----------
 
-`fixedvec` is tested against Rust 1.6 through stable, beta, and nightly.
+`fixedvec` is tested against the current stable, beta, and nightly, as well as
+the previous two stable Rust releases.
 
-The `#![no_std]` attribute was stabilized for libraries in Rust 1.6, so that is
-the minimum Rust version for which `fixedvec` will compile. Note that building
-_binaries_ without libstd is still unstable and requires nightly Rust.
+The `#![no_std]` attribute is available in stable Rust, but building _binaries_
+without libstd still requires the nightly compiler.
 
 To use `fixedvec`, add the following to your `Cargo.toml`:
 
