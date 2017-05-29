@@ -928,7 +928,8 @@ impl<'a, T> Eq for FixedVec<'a, T> where T: Copy + Eq {}
 mod test {
     use super::FixedVec;
     use std::prelude::v1::*;
-    use std::hash::{Hash, SipHasher};
+    use std::hash::Hash;
+    use std::collections::hash_map::DefaultHasher;
 
     #[test]
     fn test_empty_array() {
@@ -1000,11 +1001,11 @@ mod test {
         // Two vectors with the same contents should have the same hash
         let mut space1 = alloc_stack!([u8; 10]);
         let mut vec1 = FixedVec::new(&mut space1);
-        let mut hasher1 = SipHasher::new();
+        let mut hasher1 = DefaultHasher::new();
         vec1.push_all(&[1, 2, 3, 4, 5]).unwrap();
         let mut space2 = alloc_stack!([u8; 10]);
         let mut vec2 = FixedVec::new(&mut space2);
-        let mut hasher2 = SipHasher::new();
+        let mut hasher2 = DefaultHasher::new();
         vec2.push_all(&[1, 2, 3, 4, 5]).unwrap();
         assert_eq!(vec1.hash(&mut hasher1), vec2.hash(&mut hasher2));
     }
