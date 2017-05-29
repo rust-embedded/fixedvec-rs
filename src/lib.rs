@@ -164,7 +164,7 @@ pub enum ErrorKind {
 }
 
 #[derive(Debug)]
-pub struct FixedVec<'a, T: 'a + Copy> {
+pub struct FixedVec<'a, T: 'a> {
     memory: &'a mut [T],
     len: usize,
 }
@@ -172,9 +172,7 @@ pub struct FixedVec<'a, T: 'a + Copy> {
 pub use core::slice::Iter;
 pub use core::slice::IterMut;
 
-impl<'a, T> FixedVec<'a, T>
-    where T: 'a + Copy
-{
+impl<'a, T: 'a> FixedVec<'a, T> {
     /// Create a new `FixedVec` from the provided slice, in the process taking
     /// ownership of the slice.
     ///
@@ -324,90 +322,6 @@ impl<'a, T> FixedVec<'a, T>
     #[inline]
     pub fn as_mut_slice(&mut self) -> &mut [T] {
         &mut self.memory[..self.len]
-    }
-
-    /// Inserts an element at position `index` within the vector, shifting all
-    /// elements after position `i` one position to the right.
-    ///
-    /// # Panics
-    ///
-    /// Panics if `index` is greater than the vector's length.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # #[macro_use] extern crate fixedvec;
-    /// # use fixedvec::FixedVec;
-    /// # fn main() {
-    /// let mut space = alloc_stack!([u8; 5]);
-    /// let mut vec = FixedVec::new(&mut space);
-    ///
-    /// // Inserting in the middle moves elements to the right
-    /// vec.push_all(&[1, 2, 3]).unwrap();
-    /// vec.insert(1, 15).unwrap();
-    /// assert_eq!(vec.as_slice(), &[1, 15, 2, 3]);
-    ///
-    /// // Can also insert at the end of the vector
-    /// vec.insert(4, 16).unwrap();
-    /// assert_eq!(vec.as_slice(), &[1, 15, 2, 3, 16]);
-    ///
-    /// // Cannot insert if there is not enough capacity
-    /// assert!(vec.insert(2, 17).is_err());
-    /// # }
-    pub fn insert(&mut self, index: usize, element: T) -> Result<()> {
-        assert!(index <= self.len);
-        if index == self.len || self.len == 0 {
-            self.push(element)
-        } else if self.available() >= 1 {
-            self.len += 1;
-            let mut i = self.len;
-            loop {
-                if i == index {
-                    break;
-                }
-                self.memory[i] = self.memory[i - 1];
-                i -= 1;
-            }
-            self.memory[index] = element;
-            Ok(())
-        } else {
-            Err(ErrorKind::NoSpace)
-        }
-    }
-
-    /// Removes and returns the element at position `index` within the vector,
-    /// shifting all elements after position `index` one position to the left.
-    ///
-    /// # Panics
-    ///
-    /// Panics if `index` is out of bounds.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # #[macro_use] extern crate fixedvec;
-    /// # use fixedvec::FixedVec;
-    /// # fn main() {
-    /// let mut space = alloc_stack!([u8; 16]);
-    /// let mut vec = FixedVec::new(&mut space);
-    ///
-    /// // Remove element from the middle
-    /// vec.push_all(&[1, 2, 3]).unwrap();
-    /// assert_eq!(vec.remove(1), 2);
-    /// assert_eq!(vec.as_slice(), &[1, 3]);
-    ///
-    /// // Remove element from the end
-    /// assert_eq!(vec.remove(1), 3);
-    /// assert_eq!(vec.as_slice(), &[1]);
-    /// # }
-    pub fn remove(&mut self, index: usize) -> T {
-        assert!(index < self.len);
-        let ret = self.memory[index];
-        self.len -= 1;
-        for i in index..self.len {
-            self.memory[i] = self.memory[i + 1];
-        }
-        ret
     }
 
     /// Appends an element to the back of the vector.
@@ -599,114 +513,6 @@ impl<'a, T> FixedVec<'a, T>
         slice.iter_mut()
     }
 
-    /// Removes an element from anywhere in the vector and returns it,
-    /// replacing it with the last element.
-    ///
-    /// This does not preserve ordering, but is O(1)
-    ///
-    /// # Panics
-    ///
-    /// Panics if `index` is out of bounds
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # #[macro_use] extern crate fixedvec;
-    /// # use fixedvec::FixedVec;
-    /// # fn main() {
-    /// let mut space = alloc_stack!([u8; 10]);
-    /// let mut vec = FixedVec::new(&mut space);
-    ///
-    /// vec.push_all(&[0, 1, 2, 3]).unwrap();
-    /// assert_eq!(vec.swap_remove(1), 1);
-    /// assert_eq!(vec.as_slice(), &[0, 3, 2]);
-    /// # }
-    /// ```
-    pub fn swap_remove(&mut self, index: usize) -> T {
-        assert!(index < self.len);
-        if self.len == 1 {
-            self.remove(0)
-        } else {
-            let removed = self.memory[index];
-            self.memory[index] = self.pop().unwrap();
-            removed
-        }
-    }
-
-    /// Resizes the vector in-place so that `len()` is equal to `new_len`.
-    ///
-    /// New elements (if needed) are cloned from `value`.
-    ///
-    /// # Panics
-    ///
-    /// Panics if `new_len` is greater than capacity
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # #[macro_use] extern crate fixedvec;
-    /// # use fixedvec::FixedVec;
-    /// # fn main() {
-    /// let mut space = alloc_stack!([u8; 10]);
-    /// let mut vec = FixedVec::new(&mut space);
-    ///
-    /// assert_eq!(vec.len(), 0);
-    /// vec.resize(5, 255);
-    /// assert_eq!(vec.as_slice(), &[255, 255, 255, 255, 255]);
-    /// vec.resize(2, 0);
-    /// assert_eq!(vec.as_slice(), &[255, 255]);
-    /// # }
-    /// ```
-    pub fn resize(&mut self, new_len: usize, value: T) {
-        assert!(new_len <= self.capacity());
-        if new_len <= self.len {
-            self.len = new_len;
-        } else {
-            for i in self.memory[self.len..new_len].iter_mut() {
-                *i = Clone::clone(&value);
-            }
-            self.len = new_len;
-        }
-    }
-
-    /// Retains only the elements specified by the predicate.
-    ///
-    /// In other words, remove all elements `e` such that `f(&e)` returns
-    /// false. This method operates in-place, in O(N) time, and preserves the
-    /// order of the retained elements.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # #[macro_use] extern crate fixedvec;
-    /// # use fixedvec::FixedVec;
-    /// # fn main() {
-    /// let mut space = alloc_stack!([u8; 10]);
-    /// let mut vec = FixedVec::new(&mut space);
-    ///
-    /// vec.push_all(&[1, 2, 3, 4]).unwrap();
-    /// vec.retain(|&x| x%2 == 0);
-    /// assert_eq!(vec.as_slice(), &[2, 4]);
-    /// # }
-    /// ```
-    pub fn retain<F>(&mut self, f: F)
-        where F: Fn(&T) -> bool
-    {
-        let mut head: usize = 0;
-        let mut tail: usize = 0;
-        loop {
-            if head >= self.len {
-                break;
-            }
-            if f(&self.memory[head]) {
-                self.memory[tail] = self.memory[head];
-                tail += 1;
-            }
-            head += 1;
-        }
-        self.len = tail;
-    }
-
     /// Returns a reference to the element at the given index, or `None` if the
     /// index is out of bounds.
     ///
@@ -803,6 +609,202 @@ impl<'a, T> FixedVec<'a, T>
     /// ```
     pub unsafe fn get_unchecked_mut(&mut self, index: usize) -> &mut T {
         self.as_mut_slice().get_unchecked_mut(index)
+    }
+}
+
+impl<'a, T> FixedVec<'a, T>
+    where T: 'a + Copy
+{
+    /// Inserts an element at position `index` within the vector, shifting all
+    /// elements after position `i` one position to the right.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `index` is greater than the vector's length.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # #[macro_use] extern crate fixedvec;
+    /// # use fixedvec::FixedVec;
+    /// # fn main() {
+    /// let mut space = alloc_stack!([u8; 5]);
+    /// let mut vec = FixedVec::new(&mut space);
+    ///
+    /// // Inserting in the middle moves elements to the right
+    /// vec.push_all(&[1, 2, 3]).unwrap();
+    /// vec.insert(1, 15).unwrap();
+    /// assert_eq!(vec.as_slice(), &[1, 15, 2, 3]);
+    ///
+    /// // Can also insert at the end of the vector
+    /// vec.insert(4, 16).unwrap();
+    /// assert_eq!(vec.as_slice(), &[1, 15, 2, 3, 16]);
+    ///
+    /// // Cannot insert if there is not enough capacity
+    /// assert!(vec.insert(2, 17).is_err());
+    /// # }
+    pub fn insert(&mut self, index: usize, element: T) -> Result<()> {
+        assert!(index <= self.len);
+        if index == self.len || self.len == 0 {
+            self.push(element)
+        } else if self.available() >= 1 {
+            self.len += 1;
+            let mut i = self.len;
+            loop {
+                if i == index {
+                    break;
+                }
+                self.memory[i] = self.memory[i - 1];
+                i -= 1;
+            }
+            self.memory[index] = element;
+            Ok(())
+        } else {
+            Err(ErrorKind::NoSpace)
+        }
+    }
+
+    /// Removes and returns the element at position `index` within the vector,
+    /// shifting all elements after position `index` one position to the left.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `index` is out of bounds.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # #[macro_use] extern crate fixedvec;
+    /// # use fixedvec::FixedVec;
+    /// # fn main() {
+    /// let mut space = alloc_stack!([u8; 16]);
+    /// let mut vec = FixedVec::new(&mut space);
+    ///
+    /// // Remove element from the middle
+    /// vec.push_all(&[1, 2, 3]).unwrap();
+    /// assert_eq!(vec.remove(1), 2);
+    /// assert_eq!(vec.as_slice(), &[1, 3]);
+    ///
+    /// // Remove element from the end
+    /// assert_eq!(vec.remove(1), 3);
+    /// assert_eq!(vec.as_slice(), &[1]);
+    /// # }
+    pub fn remove(&mut self, index: usize) -> T {
+        assert!(index < self.len);
+        let ret = self.memory[index];
+        self.len -= 1;
+        for i in index..self.len {
+            self.memory[i] = self.memory[i + 1];
+        }
+        ret
+    }
+
+    /// Resizes the vector in-place so that `len()` is equal to `new_len`.
+    ///
+    /// New elements (if needed) are cloned from `value`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `new_len` is greater than capacity
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # #[macro_use] extern crate fixedvec;
+    /// # use fixedvec::FixedVec;
+    /// # fn main() {
+    /// let mut space = alloc_stack!([u8; 10]);
+    /// let mut vec = FixedVec::new(&mut space);
+    ///
+    /// assert_eq!(vec.len(), 0);
+    /// vec.resize(5, 255);
+    /// assert_eq!(vec.as_slice(), &[255, 255, 255, 255, 255]);
+    /// vec.resize(2, 0);
+    /// assert_eq!(vec.as_slice(), &[255, 255]);
+    /// # }
+    /// ```
+    pub fn resize(&mut self, new_len: usize, value: T) {
+        assert!(new_len <= self.capacity());
+        if new_len <= self.len {
+            self.len = new_len;
+        } else {
+            for i in self.memory[self.len..new_len].iter_mut() {
+                *i = Clone::clone(&value);
+            }
+            self.len = new_len;
+        }
+    }
+
+    /// Removes an element from anywhere in the vector and returns it,
+    /// replacing it with the last element.
+    ///
+    /// This does not preserve ordering, but is O(1)
+    ///
+    /// # Panics
+    ///
+    /// Panics if `index` is out of bounds
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # #[macro_use] extern crate fixedvec;
+    /// # use fixedvec::FixedVec;
+    /// # fn main() {
+    /// let mut space = alloc_stack!([u8; 10]);
+    /// let mut vec = FixedVec::new(&mut space);
+    ///
+    /// vec.push_all(&[0, 1, 2, 3]).unwrap();
+    /// assert_eq!(vec.swap_remove(1), 1);
+    /// assert_eq!(vec.as_slice(), &[0, 3, 2]);
+    /// # }
+    /// ```
+    pub fn swap_remove(&mut self, index: usize) -> T {
+        assert!(index < self.len);
+        if self.len == 1 {
+            self.remove(0)
+        } else {
+            let removed = self.memory[index];
+            self.memory[index] = self.pop().unwrap();
+            removed
+        }
+    }
+
+    /// Retains only the elements specified by the predicate.
+    ///
+    /// In other words, remove all elements `e` such that `f(&e)` returns
+    /// false. This method operates in-place, in O(N) time, and preserves the
+    /// order of the retained elements.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # #[macro_use] extern crate fixedvec;
+    /// # use fixedvec::FixedVec;
+    /// # fn main() {
+    /// let mut space = alloc_stack!([u8; 10]);
+    /// let mut vec = FixedVec::new(&mut space);
+    ///
+    /// vec.push_all(&[1, 2, 3, 4]).unwrap();
+    /// vec.retain(|&x| x%2 == 0);
+    /// assert_eq!(vec.as_slice(), &[2, 4]);
+    /// # }
+    /// ```
+    pub fn retain<F>(&mut self, f: F)
+        where F: Fn(&T) -> bool
+    {
+        let mut head: usize = 0;
+        let mut tail: usize = 0;
+        loop {
+            if head >= self.len {
+                break;
+            }
+            if f(&self.memory[head]) {
+                self.memory[tail] = self.memory[head];
+                tail += 1;
+            }
+            head += 1;
+        }
+        self.len = tail;
     }
 }
 
