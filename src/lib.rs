@@ -595,7 +595,7 @@ impl<'a, T> FixedVec<'a, T>
     /// ```
     #[inline]
     pub fn iter_mut(&mut self) -> IterMut<T> {
-        let (mut slice, _) = self.memory.split_at_mut(self.len);
+        let (slice, _) = self.memory.split_at_mut(self.len);
         slice.iter_mut()
     }
 
@@ -859,7 +859,7 @@ impl<'a, T: Copy> IntoIterator for &'a mut FixedVec<'a, T> {
     type Item = &'a mut T;
     type IntoIter = IterMut<'a, T>;
 
-    fn into_iter(mut self) -> IterMut<'a, T> {
+    fn into_iter(self) -> IterMut<'a, T> {
         self.iter_mut()
     }
 }
