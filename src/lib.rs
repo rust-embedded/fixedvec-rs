@@ -25,7 +25,6 @@
 
 #![crate_type = "lib"]
 #![crate_name = "fixedvec"]
-
 #![no_std]
 
 //! Heapless Vec implementation using only libcore
@@ -150,10 +149,10 @@ extern crate std;
 /// ```
 #[macro_export]
 macro_rules! alloc_stack {
-    ([$item_type:ty; $len:expr]) => ({
-        let space: [$item_type; $len] = [ Default::default() ; $len ];
+    ([$item_type:ty; $len:expr]) => {{
+        let space: [$item_type; $len] = [Default::default(); $len];
         space
-    })
+    }};
 }
 
 pub type Result<T> = core::result::Result<T, ErrorKind>;
@@ -173,7 +172,8 @@ pub use core::slice::Iter;
 pub use core::slice::IterMut;
 
 impl<'a, T> FixedVec<'a, T>
-    where T: 'a + Copy
+where
+    T: 'a + Copy,
 {
     /// Create a new `FixedVec` from the provided slice, in the process taking
     /// ownership of the slice.
@@ -540,7 +540,8 @@ impl<'a, T> FixedVec<'a, T>
     /// # }
     /// ```
     pub fn map_in_place<F>(&mut self, f: F)
-        where F: Fn(&mut T)
+    where
+        F: Fn(&mut T),
     {
         for i in 0..self.len {
             f(&mut self.memory[i]);
@@ -572,7 +573,6 @@ impl<'a, T> FixedVec<'a, T>
         let (slice, _) = self.memory.split_at(self.len);
         slice.iter()
     }
-
 
     /// Provides a mutable forward iterator.
     ///
@@ -690,7 +690,8 @@ impl<'a, T> FixedVec<'a, T>
     /// # }
     /// ```
     pub fn retain<F>(&mut self, f: F)
-        where F: Fn(&T) -> bool
+    where
+        F: Fn(&T) -> bool,
     {
         let mut head: usize = 0;
         let mut tail: usize = 0;
@@ -807,7 +808,8 @@ impl<'a, T> FixedVec<'a, T>
 }
 
 impl<'a, T> FixedVec<'a, T>
-    where T: 'a + Copy + PartialEq<T>
+where
+    T: 'a + Copy + PartialEq<T>,
 {
     /// Removes consecutive repeated elements in the vector in O(N) time.
     ///
@@ -865,7 +867,8 @@ impl<'a, T: Copy> IntoIterator for &'a mut FixedVec<'a, T> {
 }
 
 impl<'a, T> Hash for FixedVec<'a, T>
-    where T: Copy + Hash
+where
+    T: Copy + Hash,
 {
     #[inline]
     fn hash<H: Hasher>(&self, state: &mut H) {
@@ -874,7 +877,8 @@ impl<'a, T> Hash for FixedVec<'a, T>
 }
 
 impl<'a, T> Extend<T> for FixedVec<'a, T>
-    where T: Copy
+where
+    T: Copy,
 {
     fn extend<I: IntoIterator<Item = T>>(&mut self, iterable: I) {
         if self.available() == 0 {
@@ -891,7 +895,8 @@ impl<'a, T> Extend<T> for FixedVec<'a, T>
 }
 
 impl<'a, T> ops::Index<usize> for FixedVec<'a, T>
-    where T: Copy
+where
+    T: Copy,
 {
     type Output = T;
 
@@ -902,7 +907,8 @@ impl<'a, T> ops::Index<usize> for FixedVec<'a, T>
 }
 
 impl<'a, T> ops::IndexMut<usize> for FixedVec<'a, T>
-    where T: Copy
+where
+    T: Copy,
 {
     #[inline]
     fn index_mut(&mut self, index: usize) -> &mut T {
@@ -911,7 +917,8 @@ impl<'a, T> ops::IndexMut<usize> for FixedVec<'a, T>
 }
 
 impl<'a, T> PartialEq for FixedVec<'a, T>
-    where T: Copy + PartialEq
+where
+    T: Copy + PartialEq,
 {
     fn eq(&self, other: &FixedVec<'a, T>) -> bool {
         if self.len() != other.len() {
@@ -927,9 +934,9 @@ impl<'a, T> Eq for FixedVec<'a, T> where T: Copy + Eq {}
 #[cfg(test)]
 mod test {
     use super::FixedVec;
-    use std::prelude::v1::*;
-    use std::hash::Hash;
     use std::collections::hash_map::DefaultHasher;
+    use std::hash::Hash;
+    use std::prelude::v1::*;
 
     #[test]
     fn test_empty_array() {
