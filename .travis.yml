@@ -1,43 +1,33 @@
 sudo: false
-
 language: rust
-
-cache: cargo
-
-addons:
-  apt:
-    sources:
-      - kalakris-cmake
-    packages:
-      - cmake
-      - libcurl4-openssl-dev
-      - libelf-dev
-      - libdw-dev
-      - binutils-dev
-
 rust:
-  - 1.15.0
-  - 1.16.0
+  - 1.23.0 # oldest supported version
   - stable
   - beta
   - nightly
 
-before_script:
-  - pip install 'travis-cargo<0.2' --user
-  - export PATH=$HOME/.local/bin:$PATH
-  - |
-      if [ $TRAVIS_RUST_VERSION = "stable" ]; then
-        cargo install cargo-update
-        export PATH=$HOME/.cargo/bin:$PATH
-        cargo install-update --allow-no-update rustfmt cargo-update
-      fi
+matrix:
+  include:
+    - env: RUSTFMT
+      rust: 1.28.0
+      install:
+        - rustup component add rustfmt-preview
+      script:
+        - cargo fmt --all -- --check
+    - env: RUSTFLAGS="-D warnings"
+      rust: 1.28.0
+      script:
+        - cargo check --all --tests
+
+install:
+  - rustc -Vv
+  - cargo -V
 
 script:
-  - travis-cargo build
-  - travis-cargo test
-  - travis-cargo bench
-  - travis-cargo --only stable doc -- --no-deps
-  - travis-cargo --only stable fmt
+  - cargo check --verbose --no-default-features
+  - cargo check --all --verbose
+  - cargo test --all --verbose
+  - cargo doc --all --no-deps
 
-after_success:
-  - travis-cargo coveralls --no-sudo --verify
+cache:
+  cargo: true
