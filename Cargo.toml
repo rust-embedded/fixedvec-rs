@@ -9,13 +9,6 @@ documentation = "https://docs.rs/fixedvec"
 readme = "README.md"
 keywords = ["buffer", "vector", "no_std", "core", "heapless"]
 license = "MIT"
-build = "build.rs"
-
-[build-dependencies]
-skeptic = "0.13"
-
-[dev-dependencies]
-skeptic = "0.13"
 
 [features]
 unstable = []
