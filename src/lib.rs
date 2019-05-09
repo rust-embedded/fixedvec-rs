@@ -896,7 +896,7 @@ where
 
 impl<'a, T, I: core::slice::SliceIndex<[T]>> ops::Index<I> for FixedVec<'a, T>
 where
-    T: Copy
+    T: Copy,
 {
     type Output = I::Output;
 
@@ -908,7 +908,7 @@ where
 
 impl<'a, T, I: core::slice::SliceIndex<[T]>> ops::IndexMut<I> for FixedVec<'a, T>
 where
-    T: Copy
+    T: Copy,
 {
     #[inline]
     fn index_mut(&mut self, index: I) -> &mut Self::Output {
