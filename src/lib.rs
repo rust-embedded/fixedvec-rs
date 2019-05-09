@@ -894,25 +894,25 @@ where
     }
 }
 
-impl<'a, T> ops::Index<usize> for FixedVec<'a, T>
+impl<'a, T, I: core::slice::SliceIndex<[T]>> ops::Index<I> for FixedVec<'a, T>
 where
-    T: Copy,
+    T: Copy
 {
-    type Output = T;
+    type Output = I::Output;
 
     #[inline]
-    fn index(&self, index: usize) -> &T {
-        &(self.memory)[index]
+    fn index(&self, index: I) -> &Self::Output {
+        ops::Index::index(self.memory, index)
     }
 }
 
-impl<'a, T> ops::IndexMut<usize> for FixedVec<'a, T>
+impl<'a, T, I: core::slice::SliceIndex<[T]>> ops::IndexMut<I> for FixedVec<'a, T>
 where
-    T: Copy,
+    T: Copy
 {
     #[inline]
-    fn index_mut(&mut self, index: usize) -> &mut T {
-        &mut (self.memory)[index]
+    fn index_mut(&mut self, index: I) -> &mut Self::Output {
+        ops::IndexMut::index_mut(self.memory, index)
     }
 }
 
